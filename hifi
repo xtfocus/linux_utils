@@ -1,0 +1,44 @@
+#!/bin/zsh
+
+export HISTFILE=~/.zsh_history
+
+search_term=""
+search_mode="-c"
+
+# Function to display usage instructions
+usage() {
+    echo "Usage: hifi [-w|-c] <term>"
+    echo "Options:"
+    echo "  -w    Search for exact match of the term"
+    echo "  -c    Search for commands containing the term (default)"
+    exit 1
+}
+
+# Process command line arguments
+while getopts "wc" opt; do
+    case $opt in
+        w) search_mode="-w";;
+        c) search_mode="-c";;
+        *) usage;;
+    esac
+done
+shift $((OPTIND-1))
+
+# Check if a search term is provided
+if [ -z "$1" ]; then
+    echo "Error: Search term is required."
+    usage
+fi
+search_term="$1"
+
+# Read history file and perform search
+if [ -f "$HISTFILE" ]; then
+    if [ "$search_mode" = "-w" ]; then
+        grep -E "\b$search_term\b" "$HISTFILE"
+    else
+        grep "$search_term" "$HISTFILE"
+    fi
+else
+    echo "History file not found."
+fi
+
