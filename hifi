@@ -45,6 +45,24 @@ hifiexclude() {
     echo "$result"
 }
 
+# Function to check for overlap between excluded terms and search terms
+checkExcludedOverlap() {
+    local search_terms=("$@")
+    local excluded_terms=("${exclude_terms[@]}")
+
+    for term in "${search_terms[@]}"; do
+        for exclude_term in "${excluded_terms[@]}"; do
+            if [[ "$term" == *"$exclude_term"* ]]; then
+                echo "Warning: Excluded term '$exclude_term' overlaps with search term '$term'."
+                return 1  # Return 1 to indicate overlap
+            fi
+        done
+    done
+
+    return 0  # No overlap found
+}
+
+
 # Process command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -52,11 +70,13 @@ while [[ $# -gt 0 ]]; do
         -c) search_mode="-c";;
         -x) shift
             exclude_terms+=("$@")
+            checkExcludedOverlap "${search_terms[@]}" || exit 1  # Terminate if overlap detected
             break;;
         *) search_terms+=("$1");;
     esac
     shift
 done
+
 
 # Check if at least one search term is provided
 if [ ${#search_terms[@]} -eq 0 ]; then
