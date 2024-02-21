@@ -99,4 +99,3 @@ if [ -f "$HISTFILE" ]; then
 else
     echo "History file not found."
 fi
-
