@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# Change this to your wallpaper dir
+WALLPAPERS_DIR=/home/tung/Pictures/food_wallpapers/
+
+PIC=$(ls $WALLPAPERS_DIR | grep -E '\.(jpg|jpeg|png)$' | shuf -n1)
+
+feh --no-fehbg --bg-fill "$WALLPAPERS_DIR/$PIC"
+
