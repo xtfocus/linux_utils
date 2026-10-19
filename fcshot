@@ -1,0 +1,32 @@
+#!/bin/bash
+# fcshot [filename] — save the clipboard image (as captured by cshot) to the
+# current directory. Without a filename, saves a timestamped PNG.
+# Extensionless filenames get .png appended; other extensions are re-encoded
+# from the clipboard PNG via ImageMagick.
+set -euo pipefail
+
+if (( $# > 1 )); then
+  echo "usage: fcshot [filename]" >&2
+  exit 2
+fi
+
+name="${1:-}"
+if [[ -z "$name" ]]; then
+  name="screenshot-$(date +%Y%m%d-%H%M%S-%3N).png"
+elif [[ "$name" != *.* ]]; then
+  name+=".png"
+fi
+
+mime=$(xclip -selection clipboard -t TARGETS -o 2>/dev/null | grep -im1 '^image/' || true)
+if [[ -z "$mime" ]]; then
+  echo "fcshot: no image in clipboard (run cshot first)" >&2
+  exit 1
+fi
+
+if [[ "$mime" == image/png && "${name##*.}" == png ]]; then
+  xclip -selection clipboard -t "$mime" -o > "$name"
+else
+  xclip -selection clipboard -t "$mime" -o | { command -v magick >/dev/null && magick png:- "$name" || convert png:- "$name"; }
+fi
+
+echo "saved: $(realpath -- "$name")"
